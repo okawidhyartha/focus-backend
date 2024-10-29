@@ -139,20 +139,34 @@ const defaultSettingHandler = async (request, h) => {
     // const alarm = 'alarm.mp3';
     // const backsound = 'backsound.mp3';
 
-    const query = 'INSERT INTO setting_pomodoro(username, pomodoro, short, long, alarm, backsound) VALUES($1, $2, $3, $4, $5, $6)';
-    const values = [username, pomodoro, short, long, alarm, backsound];
-     
+    const checkQuery = 'SELECT * FROM setting_pomodoro WHERE username = $1';
+    const checkValues = [username];
+
     try {
-      await client.query(query, values);
-      const response = h.response({
-          status: 'success',
-          message: 'Default setting berhasil',
-          data: {
-              user_name: username
-          },
-      });
-      response.code(201);
-      return response;
+        const result = await client.query(checkQuery, checkValues);
+
+        // Jika username sudah terdaftar, kirim respons gagal
+        if (result.rows.length > 0) {
+            return h.response({
+                status: 'fail',
+                message: 'Setting untuk username ini sudah terdaftar',
+            }).code(400); // Bad Request
+        }
+
+        // Jika username belum ada, lakukan insert
+        const query = 'INSERT INTO setting_pomodoro(username, pomodoro, short, long, alarm, backsound) VALUES($1, $2, $3, $4, $5, $6)';
+        const values = [username, pomodoro, short, long, alarm, backsound];
+     
+        await client.query(query, values);
+        const response = h.response({
+            status: 'success',
+            message: 'Default setting berhasil',
+            data: {
+                user_name: username
+            },
+        });
+        response.code(201);
+        return response;
 
     } catch (error) {
         console.error('Error inserting new task', error.stack);
