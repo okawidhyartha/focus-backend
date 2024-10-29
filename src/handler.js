@@ -132,12 +132,12 @@ const addTaskHandler = async (request, h) => {
 };
 
 const defaultSettingHandler = async (request, h) => {
-    const { username } = request.payload;
-    const pomodoro = '25';
-    const short = '5';
-    const long = '15';
-    const alarm = 'alarm.mp3';
-    const backsound = 'backsound.mp3';
+    const { username, pomodoro, short, long, alarm, backsound } = request.payload;
+    // const pomodoro = '25';
+    // const short = '5';
+    // const long = '15';
+    // const alarm = 'alarm.mp3';
+    // const backsound = 'backsound.mp3';
   
 
     const query = 'INSERT INTO setting_pomodoro(username, pomodoro, short, long, alarm, backsound) VALUES($1, $2, $3, $4, $5, $6)';
