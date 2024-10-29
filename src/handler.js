@@ -138,7 +138,6 @@ const defaultSettingHandler = async (request, h) => {
     // const long = '15';
     // const alarm = 'alarm.mp3';
     // const backsound = 'backsound.mp3';
-  
 
     const query = 'INSERT INTO setting_pomodoro(username, pomodoro, short, long, alarm, backsound) VALUES($1, $2, $3, $4, $5, $6)';
     const values = [username, pomodoro, short, long, alarm, backsound];
