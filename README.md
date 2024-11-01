@@ -273,4 +273,8 @@
      - Perubahan actual cycle setiap 1 siklus timer selesai
 
   2. **Update active status**: untuk memastikan hanya 1 task aktif per username, update active status akan di-fetch setiap user klik atau fokus ke salah satu task.
+<<<<<<< HEAD
   3. **Default Setting**: setting awal yang akan masuk ke akun baru. Front end tentukan isi data, lalu kirim data setting default ini setiap ada yg sign-up
+=======
+  3. **Default Setting**: setting awal yang akan masuk ke akun baru. Front end isi/kirim data setting default ini setiap ada yg sign-up
+>>>>>>> 85d575154d7b2c1a06dabd9d70f47e28abb6ce93
