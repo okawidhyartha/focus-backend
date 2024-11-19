@@ -1,4 +1,5 @@
 const { client } = require('./database');
+const bcrypt = require('bcrypt');
 
 const addNewUserHandler = async (request, h) => {
     const { username, password } = request.payload;
@@ -19,9 +20,12 @@ const addNewUserHandler = async (request, h) => {
             return response;
         }
         
+        // Hash password menggunakan bcrypt sebelum menyimpannya ke database
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // Jika username belum ada, lakukan insert
         const insertQuery = 'INSERT INTO autentikasi_pomodoro(username, password) VALUES($1, $2)';
-        const insertValues = [username, password];
+        const insertValues = [username, hashedPassword];
       
         await client.query(insertQuery, insertValues);
         const response = h.response({
@@ -29,7 +33,7 @@ const addNewUserHandler = async (request, h) => {
             message: 'User baru berhasil ditambahkan',
             data: {
                 user_name: username,
-                pass_word: password,
+                // pass_word: password,
             },
         });
         response.code(201);
@@ -67,7 +71,8 @@ const authenticationCheckHandler = async (request, h) => {
         const user = result.rows[0];
 
         // Kondisi 2: Password tidak cocok
-        if (user.password !== password) {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
             const response = h.response({
                 status: 'fail',
                 message: 'Wrong password',
