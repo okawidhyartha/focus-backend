@@ -69,7 +69,7 @@
 - **Request Body**:
   - `username`: string
   - `task_name`: string
-  - `target_cycle`: string
+  - `target_cycle`: integer
 - **Response**:
   - **201**: Task baru berhasil ditambahkan
     ```
@@ -97,8 +97,8 @@
                 "id": 3,
                 "username": "selna",
                 "task_name": "tugas A",
-                "actual_cycle": "5",
-                "target_cycle": "7",
+                "actual_cycle": 5,
+                "target_cycle": 7,
                 "complete_status": true,
                 "active_status": false
             }
@@ -119,8 +119,8 @@
 - **Request Body**:
   - `username`: string
   - `task_name`: string
-  - `actual_cycle`: string
-  - `target_cycle`: string
+  - `actual_cycle`: integer
+  - `target_cycle`: integer
   - `complete_status`: boolean
 - **Response**:
   - **200**: Task berhasil diperbarui
