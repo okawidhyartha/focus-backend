@@ -15,8 +15,7 @@
         "status": "success",
         "message": "User baru berhasil ditambahkan",
         "data": {
-            "user_name": "selna",
-            "pass_word": "pass1"
+            "user_name": "selna"
         }
     }
     ```
