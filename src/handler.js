@@ -124,7 +124,6 @@ const addTaskHandler = async (request, h) => {
             task_id: taskId,
             user_name: username,
             task_baru: task_name,
-            task_id: taskId,
           },
       });
       response.code(201);
