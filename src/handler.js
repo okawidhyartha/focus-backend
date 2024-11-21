@@ -109,17 +109,22 @@ const addTaskHandler = async (request, h) => {
     const complete_status = false;
     const active_status = false;
 
-    const query = 'INSERT INTO task_pomodoro(username, task_name, actual_cycle, target_cycle, complete_status, active_status) VALUES($1, $2, $3, $4, $5, $6)';
+    const query = 'INSERT INTO task_pomodoro(username, task_name, actual_cycle, target_cycle, complete_status, active_status) VALUES($1, $2, $3, $4, $5, $6) RETURNING id';
     const values = [username, task_name, actual_cycle, target_cycle, complete_status, active_status];
      
     try {
-      await client.query(query, values);
+      const result = await client.query(query, values);
+
+      const taskId = result.rows[0].id;
+
       const response = h.response({
           status: 'success',
           message: 'Task baru berhasil ditambahkan',
           data: {
-              user_name: username,
-              task_baru: task_name,
+            task_id: taskId,
+            user_name: username,
+            task_baru: task_name,
+            task_id: taskId,
           },
       });
       response.code(201);
@@ -174,7 +179,7 @@ const defaultSettingHandler = async (request, h) => {
         return response;
 
     } catch (error) {
-        console.error('Error inserting new task', error.stack);
+        console.error('Error inserting new setting', error.stack);
         const response = h.response({
             status: 'fail',
             message: 'Default setting gagal',
