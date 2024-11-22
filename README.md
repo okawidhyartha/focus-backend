@@ -77,10 +77,10 @@
         "status": "success",
         "message": "Task baru berhasil ditambahkan",
         "data": {
-            "task_id": 33,
+            "task_id": 19,
             "user_name": "selna",
-            "task_baru": "tugas A",
-
+            "task_baru": "kerja abcde",
+            "timestamp": "2024-11-22T08:00:53.098Z"
         }
     }
     ```
