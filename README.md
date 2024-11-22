@@ -79,7 +79,8 @@
         "data": {
             "task_id": 33,
             "user_name": "selna",
-            "task_baru": "tugas A"
+            "task_baru": "tugas A",
+
         }
     }
     ```
@@ -94,13 +95,14 @@
         "status": "success",
         "data": [
             {
-                "id": 3,
+                "id": 18,
                 "username": "selna",
-                "task_name": "tugas A",
-                "actual_cycle": 5,
-                "target_cycle": 7,
-                "complete_status": true,
-                "active_status": false
+                "task_name": "kerja abcde",
+                "actual_cycle": "0",
+                "target_cycle": "4",
+                "complete_status": false,
+                "active_status": false,
+                "timestamp": "2024-11-22T07:55:33.696Z"
             }
         ]
     }
