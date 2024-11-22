@@ -108,9 +108,10 @@ const addTaskHandler = async (request, h) => {
     const actual_cycle = 0;
     const complete_status = false;
     const active_status = false;
+    const timestamp = new Date();
 
-    const query = 'INSERT INTO task_pomodoro(username, task_name, actual_cycle, target_cycle, complete_status, active_status) VALUES($1, $2, $3, $4, $5, $6) RETURNING id';
-    const values = [username, task_name, actual_cycle, target_cycle, complete_status, active_status];
+    const query = 'INSERT INTO task_pomodoro(username, task_name, actual_cycle, target_cycle, complete_status, active_status, timestamp) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+    const values = [username, task_name, actual_cycle, target_cycle, complete_status, active_status, timestamp];
      
     try {
       const result = await client.query(query, values);
