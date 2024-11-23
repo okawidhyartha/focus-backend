@@ -71,6 +71,7 @@
   - `username`: string
   - `task_name`: string
   - `target_cycle`: integer  
+
   *OPTIONAL*:  
   - `actual_cycle` : integer
   - `complete_status` : boolean
