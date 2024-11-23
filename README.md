@@ -66,11 +66,11 @@
 ### Add Task
 - **Method**: POST
 - **Path**: /task
-- **Request Body**:
+- **Request Body**:  
   *REQUIRED*:  
   - `username`: string
   - `task_name`: string
-  - `target_cycle`: integer
+  - `target_cycle`: integer  
   *OPTIONAL*:  
   - `actual_cycle` : integer
   - `complete_status` : boolean
