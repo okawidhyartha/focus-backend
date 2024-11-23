@@ -67,9 +67,15 @@
 - **Method**: POST
 - **Path**: /task
 - **Request Body**:
+  REQUIRED
   - `username`: string
   - `task_name`: string
   - `target_cycle`: integer
+  OPTIONAL:
+  - `actual_cycle` : integer
+  - `complete_status` : boolean
+  - `active_status` : boolean
+  - `timestamp` : timestamp ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ)
 - **Response**:
   - **201**: Task baru berhasil ditambahkan
     ```
@@ -77,11 +83,22 @@
         "status": "success",
         "message": "Task baru berhasil ditambahkan",
         "data": {
-            "task_id": 19,
-            "user_name": "selna",
-            "task_baru": "kerja abcde",
-            "timestamp": "2024-11-22T08:00:53.098Z"
+            "task_id": 45,
+            "username": "aaaa",
+            "task_name": "kerja abcde",
+            "target_cycle": 3,
+            "actual_cycle": 0,
+            "complete_status": false,
+            active_status: false,
+            "timestamp": "2024-11-23T07:42:58.348Z"
         }
+    }
+    ```
+  - **400**: Username / Task Name / Target Cycle belum diisi
+    ```
+    {
+        "status": "fail",
+        "message": "Missing required fields"
     }
     ```
 

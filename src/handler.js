@@ -105,10 +105,25 @@ const authenticationCheckHandler = async (request, h) => {
 
 const addTaskHandler = async (request, h) => {
     const { username, task_name, target_cycle } = request.payload;
-    const actual_cycle = 0;
-    const complete_status = false;
-    const active_status = false;
-    const timestamp = new Date();
+    
+    if (!username || !task_name || target_cycle == undefined) {
+        const response = h.response({
+            status: 'fail',
+            message: 'Missing required fields',
+        });
+        response.code(400);
+        return response;
+    }
+
+    const default_actual_cycle = 0;
+    const default_complete_status = false;
+    const default_active_status = false;
+    const default_timestamp = new Date();
+
+    const actual_cycle = request.payload.actual_cycle || default_actual_cycle;
+    const complete_status = request.payload.complete_status !== undefined ? request.payload.complete_status : default_complete_status;
+    const active_status = request.payload.active_status !== undefined ? request.payload.active_status : default_active_status;
+    const timestamp = request.payload.timestamp || default_timestamp;
 
     const query = 'INSERT INTO task_pomodoro(username, task_name, actual_cycle, target_cycle, complete_status, active_status, timestamp) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id';
     const values = [username, task_name, actual_cycle, target_cycle, complete_status, active_status, timestamp];
@@ -123,8 +138,12 @@ const addTaskHandler = async (request, h) => {
           message: 'Task baru berhasil ditambahkan',
           data: {
             task_id: taskId,
-            user_name: username,
-            task_baru: task_name,
+            username: username,
+            task_name: task_name,
+            target_cycle: target_cycle,
+            actual_cycle: actual_cycle,
+            complete_status: complete_status,
+            active_status: active_status,
             timestamp: timestamp,
           },
       });
