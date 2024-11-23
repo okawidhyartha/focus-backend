@@ -67,11 +67,11 @@
 - **Method**: POST
 - **Path**: /task
 - **Request Body**:
-  REQUIRED
+  *REQUIRED*:
   - `username`: string
   - `task_name`: string
   - `target_cycle`: integer
-  OPTIONAL:
+  *OPTIONAL*:
   - `actual_cycle` : integer
   - `complete_status` : boolean
   - `active_status` : boolean
