@@ -1,6 +1,35 @@
 # API Documentation
 
-## 1. User Management
+## 1. JWT Token
+
+### Getting new access token
+- **Method**: POST
+- **Path**: /refresh-token
+- **Request Body**: 
+  *REQUIRED*:  
+  - `refreshToken`: string
+- **Response**:
+  - **201**: Berhasil mendapat token baru
+    ```
+    {
+        "status": "success",
+        "message": "Token refreshed successfully",
+        "data": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXNy"
+        }
+    }
+    ```
+  - **401**: Invalid refresh token
+    ```
+    {
+        "status": "fail",
+        "message": "Invalid or expired refresh token"
+    }
+    ```
+
+---
+
+## 2. User Management
 
 ### Sign Up
 - **Method**: POST
@@ -40,7 +69,9 @@
         "status": "success",
         "message": "Authentication successful",
         "data": {
-            "user_name": "selna"
+            "user_name": "selna",
+            "access_token": "yZXNodG9rZW4yIiwidXNlcm5hbWUiOiJ0ZXNyZWZyZXNodG9rZW4yIi",
+            "refresh_token": "JleHAiOjE3MzI5ODc2MjYsImF1ZCI6ImF1ZGllbmNlIiwiaXNzIjoi"
         }
     }
     ```
@@ -61,11 +92,13 @@
 
 ---
 
-## 2. Task Management
+## 3. Task Management
 
 ### Add Task
 - **Method**: POST
 - **Path**: /task
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Request Body**:  
   *REQUIRED*:  
   - `username`: string
@@ -106,6 +139,8 @@
 ### Get Tasks by Username
 - **Method**: GET
 - **Path**: /tasks/{username}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Response**:
   - **200**: Berhasil mendapatkan tasks
     ```
@@ -136,6 +171,8 @@
 ### Edit Task by ID
 - **Method**: PUT
 - **Path**: /task/{id}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Request Body**:
   - `username`: string
   - `task_name`: string
@@ -150,6 +187,13 @@
         "message": "Task berhasil diperbarui"
     }
     ```
+  - **403**: Username tidak sesuai dengan ID Task
+    ```
+    {
+        "status": "fail",
+        "message": "Username tidak sesuai dengan ID Task"
+    }
+    ```
   - **404**: Id tidak ditemukan
     ```
     {
@@ -161,6 +205,8 @@
 ### Update Active Status (by ID Task)
 - **Method**: PUT
 - **Path**: /activetask/{id}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Request Body**:
   - `username`: string
 - **Response**:
@@ -182,6 +228,8 @@
 ### Delete Task by ID
 - **Method**: DELETE
 - **Path**: /task/{id}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Response**:
   - **200**: Task berhasil dihapus
     ```
@@ -200,7 +248,7 @@
 
 ---
 
-## 3. Settings Management
+## 4. Settings Management
 
 ### Default Settings
 - **Method**: POST
@@ -234,6 +282,8 @@
 ### Get Setting by Username
 - **Method**: GET
 - **Path**: /setting/{username}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Response**:
   - **200**: Berhasil mendapatkan setting
     ```
@@ -262,6 +312,8 @@
 ### Update Setting by Username
 - **Method**: PUT
 - **Path**: /setting/{username}
+- **Header**:  
+  `Authorization`: `Bearer <TOKEN>`
 - **Request Body**:
   - `pomodoro`: string
   - `short`: string

@@ -1,4 +1,5 @@
 const { 
+    refreshTokenHandler,
     addNewUserHandler, //sign up (table autentikasi)
     authenticationCheckHandler, //sign in, POST (table autentikasi)
     addTaskHandler, //tambah task baru (table task)
@@ -14,57 +15,95 @@ const {
     deleteTaskByIdHandler //hapus task berdasarkan id nya (table task)
   } = require('./handler'); //pakai{} karna dia fungsi
   
-  const routes = [
-      {
-        method: 'POST',
-        path: '/signup',
-        handler: addNewUserHandler,
-      },
-      {
-        method: 'POST',
-        path: '/signin',
-        handler: authenticationCheckHandler,
-      },
-      {
-        method: 'POST',
-        path: '/task',
-        handler: addTaskHandler,
-      },
-      {
-        method: 'POST',
-        path: '/setting',
-        handler: defaultSettingHandler,
-      },
-      {
-        method: 'GET',
-        path: '/tasks/{username}',
-        handler: getTasksByUsernameHandler,
-      },
-      {
-        method: 'GET',
-        path: '/setting/{username}',
-        handler: getSettingByUsernameHandler,
-      },
-      {
-        method: 'PUT',
-        path: '/task/{id}',
-        handler: editTaskByIdHandler,
-      },
-      {
-        method: 'PUT',
-        path: '/activetask/{id}',
-        handler: updateActiveStatusHandler,
-      },
-      {
-        method: 'PUT',
-        path: '/setting/{username}',
-        handler: updateSettingByUsernameHandler,
-      },
-      {
-        method: 'DELETE',
-        path: '/task/{id}',
-        handler: deleteTaskByIdHandler,
-      },
-     ];
-      
-     module.exports = routes;
+const routes = [
+  {
+    method: 'POST',
+    path: '/refresh-token',
+    handler: refreshTokenHandler,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'POST',
+    path: '/signup',
+    handler: addNewUserHandler,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'POST',
+    path: '/signin',
+    handler: authenticationCheckHandler,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'POST',
+    path: '/task',
+    handler: addTaskHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'POST',
+    path: '/setting',
+    handler: defaultSettingHandler,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'GET',
+    path: '/tasks/{username}',
+    handler: getTasksByUsernameHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'GET',
+    path: '/setting/{username}',
+    handler: getSettingByUsernameHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'PUT',
+    path: '/task/{id}',
+    handler: editTaskByIdHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'PUT',
+    path: '/activetask/{id}',
+    handler: updateActiveStatusHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'PUT',
+    path: '/setting/{username}',
+    handler: updateSettingByUsernameHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+  {
+    method: 'DELETE',
+    path: '/task/{id}',
+    handler: deleteTaskByIdHandler,
+    options: {
+      auth: 'jwt', 
+    },
+  },
+];
+
+module.exports = routes;

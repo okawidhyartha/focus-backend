@@ -1,5 +1,68 @@
 const { client } = require('./database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const refreshTokenHandler = async (request, h) => {
+    const { refreshToken } = request.payload; // Ambil Refresh Token dari request body
+
+    if (!refreshToken) {
+        const response = h.response({
+            status: 'fail',
+            message: 'Refresh token is required',
+        });
+        response.code(400);
+        return response;
+    }
+
+    try {
+        // Verifikasi Refresh Token
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
+        const username = decoded.username; // Ambil username dari decoded token
+
+        // Periksa apakah refresh token ada di database
+        const query = 'SELECT refresh_token FROM autentikasi_pomodoro WHERE username = $1';
+        const values = [username]; // Gunakan username yang sudah didapatkan dari decoded token
+        const result = await client.query(query, values);
+
+        if (result.rows.length === 0 || result.rows[0].refresh_token !== refreshToken) {
+            // Jika refresh token tidak ada di database atau tidak cocok
+            return h.response({ status: 'fail', message: 'Invalid refresh token' }).code(401);
+        }
+
+        // Jika Refresh Token valid, buat Access Token baru
+        const accessToken = jwt.sign(
+            { 
+                sub: decoded.username,  // Klaim sub diisi dengan username dari decoded Refresh Token
+                username: decoded.username
+            }, 
+            process.env.JWT_SECRET, 
+            { 
+                expiresIn: '1h',  // Access Token expired dalam 1 jam
+                audience: 'audience',
+                issuer: 'issuer'
+            }
+        );
+
+        // Kembalikan Access Token baru
+        const response = h.response({
+            status: 'success',
+            message: 'Token refreshed successfully',
+            data: {
+                token: accessToken, // Kirimkan Access Token baru kepada client
+            },
+        });
+        response.code(200);
+        return response;
+
+    } catch (error) {
+        const response = h.response({
+            status: 'fail',
+            message: 'Invalid or expired refresh token',
+        });
+        response.code(401);
+        return response;
+    }
+};
 
 const addNewUserHandler = async (request, h) => {
     const { username, password } = request.payload;
@@ -82,11 +145,46 @@ const authenticationCheckHandler = async (request, h) => {
         }
 
         // Jika username ditemukan dan password cocok
+        // Buat Access Token
+        const accessToken = jwt.sign(
+            { 
+                sub: user.username,  // Klaim sub diisi dengan username atau ID pengguna
+                username: user.username 
+            }, 
+            process.env.JWT_SECRET, 
+            { 
+                expiresIn: '10s',  // Token akan kedaluwarsa dalam 1 jam
+                audience: 'audience', // Menambahkan audience pada token
+                issuer: 'issuer' // Menambahkan issuer pada token
+            }
+        );
+
+        // Buat Refresh Token (lebih lama expired-nya)
+        const refreshToken = jwt.sign(
+            { 
+                sub: user.username,
+                username: user.username
+            }, 
+            process.env.JWT_REFRESH, 
+            { 
+                expiresIn: '7d',  // Refresh token expired dalam 7 hari
+                audience: 'audience',
+                issuer: 'issuer'
+            }
+        );
+
+        // Simpan refresh token di database (biasanya lebih baik disimpan di tabel user atau tabel refresh_tokens)
+        const updateQuery = 'UPDATE autentikasi_pomodoro SET refresh_token = $1 WHERE username = $2';
+        const updateValues = [refreshToken, username];
+        await client.query(updateQuery, updateValues); // Update refresh token
+
         const response = h.response({
             status: 'success',
             message: 'Authentication successful',
             data: {
-                user_name: username,
+                user_name: user.username,
+                access_token: accessToken,  // Kirimkan Access Token ke client
+                refresh_token: refreshToken // Kirimkan Refresh Token ke client
             },
         });
         response.code(200);
@@ -105,7 +203,13 @@ const authenticationCheckHandler = async (request, h) => {
 
 const addTaskHandler = async (request, h) => {
     const { username, task_name, target_cycle } = request.payload;
-    
+    // Ambil username dari token JWT yang sudah didekode
+    const decodedUsername = request.auth.credentials.username;
+    // Bandingkan username dalam body dengan username dalam token
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
+
     if (!username || !task_name || target_cycle == undefined) {
         const response = h.response({
             status: 'fail',
@@ -163,12 +267,7 @@ const addTaskHandler = async (request, h) => {
 
 const defaultSettingHandler = async (request, h) => {
     const { username, pomodoro, short, long, alarm, backsound } = request.payload;
-    // const pomodoro = '25';
-    // const short = '5';
-    // const long = '15';
-    // const alarm = 'alarm.mp3';
-    // const backsound = 'backsound.mp3';
-
+    
     const checkQuery = 'SELECT * FROM setting_pomodoro WHERE username = $1';
     const checkValues = [username];
 
@@ -211,6 +310,11 @@ const defaultSettingHandler = async (request, h) => {
 
 const getTasksByUsernameHandler = async (request, h) => {
     const { username } = request.params;
+
+    const decodedUsername = request.auth.credentials.username;
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
     const query = 'SELECT * FROM task_pomodoro WHERE username = $1';
     const values = [username];
        
@@ -244,6 +348,11 @@ const getTasksByUsernameHandler = async (request, h) => {
 
 const getSettingByUsernameHandler = async (request, h) => {
     const { username } = request.params;
+
+    const decodedUsername = request.auth.credentials.username;
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
     const query = 'SELECT * FROM setting_pomodoro WHERE username = $1';
 
     try {
@@ -278,6 +387,29 @@ const editTaskByIdHandler = async (request, h) => {
     const { id } = request.params;
     const { username, task_name, actual_cycle, target_cycle, complete_status} = request.payload;
    
+    const decodedUsername = request.auth.credentials.username;
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
+
+    const selectQuery = 'SELECT username FROM task_pomodoro WHERE id = $1';
+    const selectvalues = [id];
+
+    const selectResult = await client.query(selectQuery, selectvalues);
+
+    if (selectResult.rowCount === 0) {
+        const response = h.response({
+            status: 'fail',
+            message: 'Task tidak ditemukan',
+        });
+        response.code(404);
+        return response;
+    }
+
+    if (selectResult.rows[0].username !== username) {
+        return h.response({ message: 'Username tidak sesuai dengan ID Task' }).code(403);
+    }
+
     const query = 'UPDATE task_pomodoro SET username = $1, task_name = $2, actual_cycle = $3, target_cycle = $4, complete_status = $5 WHERE id = $6';
     const values = [username, task_name, actual_cycle, target_cycle, complete_status, id];
      
@@ -315,6 +447,10 @@ const updateActiveStatusHandler = async (request, h) => {
     const { id } = request.params;
     const { username } = request.payload;
 
+    const decodedUsername = request.auth.credentials.username;
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
     //semua task milik username ini menjadi tidak aktif
     const deactivateQuery = 'UPDATE task_pomodoro SET active_status = false WHERE username = $1';
     const deactivateValues = [username];
@@ -354,6 +490,11 @@ const updateActiveStatusHandler = async (request, h) => {
 
 const updateSettingByUsernameHandler = async (request, h) => {
     const { username } = request.params;
+
+    const decodedUsername = request.auth.credentials.username;
+    if (username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
     const { pomodoro, short, long, alarm, backsound } = request.payload;
    
     const query = 'UPDATE setting_pomodoro SET pomodoro = $1, short = $2, long = $3, alarm = $4, backsound = $5 WHERE username = $6';
@@ -392,13 +533,31 @@ const updateSettingByUsernameHandler = async (request, h) => {
 const deleteTaskByIdHandler = async (request, h) => {
     const { id } = request.params;
 
-    const query = 'DELETE FROM task_pomodoro WHERE id = $1';
+    // Query untuk mendapatkan username berdasarkan id task
+    const selectQuery = 'SELECT username FROM task_pomodoro WHERE id = $1';
     const values = [id];
 
-    try {
-        const result = await client.query(query, values);
+    const selectResult = await client.query(selectQuery, values);
 
-        if (result.rowCount > 0) {
+    if (selectResult.rowCount === 0) {
+        const response = h.response({
+            status: 'fail',
+            message: 'Task tidak ditemukan',
+        });
+        response.code(404);
+        return response;
+    }
+
+    const decodedUsername = request.auth.credentials.username;
+    if (selectResult.rows[0].username !== decodedUsername) {
+        return h.response({ message: 'Username tidak cocok dengan token' }).code(403);
+    }
+
+    try {
+        const deleteQuery = 'DELETE FROM task_pomodoro WHERE id = $1';
+        const deleteResult = await client.query(deleteQuery, values);
+
+        if (deleteResult.rowCount > 0) {
             const response = h.response({
                 status: 'success',
                 message: 'Task berhasil dihapus',
@@ -426,6 +585,7 @@ const deleteTaskByIdHandler = async (request, h) => {
 };
 
 module.exports = {
+    refreshTokenHandler,
     addNewUserHandler, //sign up (table autentikasi)
     authenticationCheckHandler, //sign in, POST (table autentikasi)
     addTaskHandler, //tambah task baru (table task)
