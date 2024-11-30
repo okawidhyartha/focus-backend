@@ -153,7 +153,7 @@ const authenticationCheckHandler = async (request, h) => {
             }, 
             process.env.JWT_SECRET, 
             { 
-                expiresIn: '10s',  // Token akan kedaluwarsa dalam 1 jam
+                expiresIn: '1h',  // Token akan kedaluwarsa dalam 1 jam
                 audience: 'audience', // Menambahkan audience pada token
                 issuer: 'issuer' // Menambahkan issuer pada token
             }
