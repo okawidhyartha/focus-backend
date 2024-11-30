@@ -183,7 +183,6 @@ const authenticationCheckHandler = async (request, h) => {
             message: 'Authentication successful',
             data: {
                 user_name: user.username,
-                username: username,
                 access_token: accessToken,  // Kirimkan Access Token ke client
                 refresh_token: refreshToken // Kirimkan Refresh Token ke client
             },
