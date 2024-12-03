@@ -44,7 +44,9 @@
         "status": "success",
         "message": "User baru berhasil ditambahkan",
         "data": {
-            "user_name": "selna"
+            "user_name": "selna",
+            "access_token": "yZXNodG9rZW4yIiwidXNlcm5hbWUiOiJ0ZXNyZWZyZXNodG9rZW4yIi",
+            "refresh_token": "JleHAiOjE3MzI5ODc2MjYsImF1ZCI6ImF1ZGllbmNlIiwiaXNzIjoi"
         }
     }
     ```
