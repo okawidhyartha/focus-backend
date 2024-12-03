@@ -89,18 +89,55 @@ const addNewUserHandler = async (request, h) => {
         // Jika username belum ada, lakukan insert
         const insertQuery = 'INSERT INTO autentikasi_pomodoro(username, password) VALUES($1, $2)';
         const insertValues = [username, hashedPassword];
-      
+    
         await client.query(insertQuery, insertValues);
+
+        // Buat Access Token
+        const accessToken = jwt.sign(
+            { 
+                sub: username,  // Klaim sub diisi dengan username atau ID pengguna
+                username: username 
+            }, 
+            process.env.JWT_SECRET, 
+            { 
+                expiresIn: '1h',  // Token akan kedaluwarsa dalam 1 jam
+                audience: 'audience', // Menambahkan audience pada token
+                issuer: 'issuer' // Menambahkan issuer pada token
+            }
+        );
+
+        // Buat Refresh Token (lebih lama expired-nya)
+        const refreshToken = jwt.sign(
+            { 
+                sub: username,
+                username: username
+            }, 
+            process.env.JWT_REFRESH, 
+            { 
+                expiresIn: '7d',  // Refresh token expired dalam 7 hari
+                audience: 'audience',
+                issuer: 'issuer'
+            }
+        );
+
+        // Simpan refresh token di database (biasanya lebih baik disimpan di tabel user atau tabel refresh_tokens)
+        const updateQuery = 'UPDATE autentikasi_pomodoro SET refresh_token = $1 WHERE username = $2';
+        const updateValues = [refreshToken, username];
+        await client.query(updateQuery, updateValues); // Update refresh token
+
+       
         const response = h.response({
             status: 'success',
             message: 'User baru berhasil ditambahkan',
             data: {
                 user_name: username,
-                // pass_word: password,
+                access_token: accessToken,  // Kirimkan Access Token ke client
+                refresh_token: refreshToken // Kirimkan Refresh Token ke client
             },
         });
         response.code(201);
         return response;
+
 
     } catch (error) {
         console.error('Error inserting new user', error.stack);
